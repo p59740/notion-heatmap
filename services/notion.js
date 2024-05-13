@@ -34,6 +34,8 @@ module.exports = async function getPomo() {
       "direction": "ascending"
     }]
   });
+  // Log the results here
+  console.log("Results from Notion API:", results);
 
   const rawPomos = results.map(page => {
     return {
