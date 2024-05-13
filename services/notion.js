@@ -16,21 +16,21 @@ module.exports = async function getPomo() {
     filter: {
       "and": [
         {
-          "property": "Date",
+          "property": "InitStart",
           "date": {
             "is_not_empty": true,
             "before": today
           }
         },
         {
-          "property": "Status",
-          "status": {
-            "equals": 'Done'
+          "property": "Studied",
+          "checkbox": {
+            "equals": true
           }
         },]
     },
     sorts: [{
-      "property": "Date",
+      "property": "InitStart",
       "direction": "ascending"
     }]
   })
@@ -39,7 +39,8 @@ module.exports = async function getPomo() {
   const rawPomos = results.map(page => {
     return {
       "date": page.properties.Date.date.start,
-      "pomos": page.properties['Actual🍅'].number
+      // "pomos": page.properties['Actual🍅'].number
+      "pomos": 1
     }
   })
 
