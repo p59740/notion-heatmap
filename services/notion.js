@@ -1,16 +1,15 @@
-const dotenv = require('dotenv').config()
-const { Client } = require('@notionhq/client')
+const dotenv = require('dotenv').config();
+const { Client } = require('@notionhq/client');
 
-// init client
+// Init client
 const notion = new Client({
   auth: process.env.NOTION_TOKEN,
-})
+});
 
-const database_id = process.env.NOTION_DATABASE_ID
-const today = new Date().toISOString().slice(0, 10)
+const database_id = process.env.NOTION_DATABASE_ID;
+const today = new Date().toISOString().slice(0, 10);
 
 module.exports = async function getPomo() {
-
   const { results } = await notion.databases.query({
     database_id: `${database_id}`,
     filter: {
@@ -27,38 +26,34 @@ module.exports = async function getPomo() {
           "checkbox": {
             "equals": true
           }
-        },]
+        }
+      ]
     },
     sorts: [{
       "property": "InitStart",
       "direction": "ascending"
     }]
-  })
-
+  });
 
   const rawPomos = results.map(page => {
     return {
       "date": page.properties.InitStart.date.start,
-      // "pomos": page.properties['Actual🍅'].number
-      "pomos": 1
-    }
-  })
+      "pomos": 1 // Assuming each "Studied" item contributes 1 pomo
+    };
+  });
 
-  // const groupByKey = (data, key) => Object.values(
-  //   data.reduce((res, item) => {
-  //     const value = item[key] // date
-  //     const existing = res[value] || { [key]: value, cumPomos: 0 }
-  //     return {
-  //       ...res,
-  //       [value]: {
-  //         ...existing,
-  //         cumPomos: existing.cumPomos + item.pomos
-  //       }
-  //     }
-  //   }, {})
-  // )
+  // Aggregate the pomos by date
+  const aggregatedPomos = rawPomos.reduce((accumulator, currentItem) => {
+    const { date, pomos } = currentItem;
+    accumulator[date] = (accumulator[date] || 0) + pomos;
+    return accumulator;
+  }, {});
 
-  // const groupedPomos = groupByKey(rawPomos, 'date')
+  // Convert the aggregated data back into an array of objects
+  const resultArray = Object.keys(aggregatedPomos).map(date => ({
+    date,
+    pomos: aggregatedPomos[date]
+  }));
 
-  return rawPomos
-}
+  return resultArray;
+};
